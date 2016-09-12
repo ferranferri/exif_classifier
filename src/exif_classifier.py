@@ -13,15 +13,25 @@ class ExifClassifier:
         self.config = {}
         self.files_to_process = []
 
-    def __load_configuration(self, configuration_file):
+    def load_configuration(self, configuration_file):
+        """
+        Loads config file set in constructor.
+        :param configuration_file:
+        :return:
+        """
         # check that exists
         if not os.path.exists(self.config_file):
             raise IOError('File ' + self.config_file + ' does not exists')
-        with open(self.config_file) as data_file:
-            self.config = json.load(data_file)
+        if os.path.isdir(self.config_file):
+            raise IOError('A file is expected but ' + self.config_file + ' is a directory')
+        try:
+            with open(self.config_file) as data_file:
+                self.config = json.load(data_file)
+        except ValueError as err:
+            raise ValueError("Cannot parse json file " + self.config_file)
 
     def start(self):
-        self.__load_configuration(configuration_file=self.config_file)
+        self.load_configuration(configuration_file=self.config_file)
         file_list = self.get_file_list(self.config['source_folder'])
         pass
 
