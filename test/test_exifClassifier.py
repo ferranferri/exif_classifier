@@ -57,7 +57,7 @@ class TestExifClassifier(TestCase):
         ec.load_configuration(ec.config_file)
         source_folder = os.path.join(self.base_folder, ec.config['source_folder'])
         list_of_files = ec.get_file_list(source_folder)
-        self.assertEqual(len(list_of_files), 13)
+        self.assertEqual(len(list_of_files), 4)
 
     def test_get_file_list_each_element_of_list_is_full_path(self):
         ec = ExifClassifier(config_file=self.correct_json_file_with_content)
@@ -75,4 +75,4 @@ class TestExifClassifier(TestCase):
         list_of_files = ec.get_file_list(source_folder)
         for f in list_of_files:
             self.assertTrue(os.path.exists(f) and os.path.isfile(f))
-        self.assertEqual(len(list_of_files), 30)
+        self.assertEqual(len(list_of_files), 15)
