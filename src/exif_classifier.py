@@ -15,11 +15,11 @@ class ExifClassifier:
 
     def load_configuration(self, configuration_file):
         """
-        Loads config file set in constructor.
+        Loads config file set in constructor. Raises IOError if is not a correct file or does not exists and ValueError
+        if the contents are not valid json.
         :param configuration_file:
-        :return:
+        :return: None
         """
-        # check that exists
         if not os.path.exists(self.config_file):
             raise IOError('File ' + self.config_file + ' does not exists')
         if os.path.isdir(self.config_file):
@@ -36,21 +36,23 @@ class ExifClassifier:
         pass
 
     def get_file_list(self, source_folder):
-        flist = []
-        self.__list_subfolder(source_folder)
+        return self.__list_subfolder(source_folder)
         pass
 
     def __list_subfolder(self, source_folder):
         dirs = os.listdir(source_folder)
+        file_list = []
         for d in dirs:
             fname = os.path.join(os.path.abspath(source_folder), d)
             if not os.path.exists(fname):
                 raise IOError("path " + fname + " does not exists!!")
             if os.path.isfile(fname):
                 filename = os.path.abspath(fname)
-                self.files_to_process.append(filename)
+                file_list.append(filename)
             if os.path.isdir(fname):
-                self.__list_subfolder(os.path.abspath(fname))
+                l = self.__list_subfolder(os.path.abspath(fname))
+                file_list + l
+        return file_list
 
 """
 exif_dict = piexif.load(

@@ -19,6 +19,8 @@ Camera
 .idea/sqlDataSources.xml
 .idea/dynamic.xml
 /test/resources/connf.json
+/test_resources/camera10
+/test_resources/camera0
 .idea/uiDesigner.xml
 
 # Gradle:
