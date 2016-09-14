@@ -6,6 +6,8 @@ import logging
 import piexif
 from shutil import copyfile
 import ntpath
+
+from file_item import FileItem
 from percentage_show import printProgress
 
 DEFAULT_CONFIG_FILE = 'conf/config.json'
@@ -45,16 +47,26 @@ class ExifClassifier:
         i = 0
         for item in file_list:
             i += 1
-            exif_dict = piexif.load(item)
-            creation_date = exif_dict['Exif'][36867]
-            date_folder = creation_date.split(' ')[0].replace(':', '/')
+            date_folder = self.extract_exif_creation_date(item)
             global_folder_name = os.path.join(des_folder, date_folder)
             if not os.path.exists(global_folder_name):
                 os.makedirs(global_folder_name)
             file_name = ntpath.basename(item)
-            copyfile(item, os.path.join(global_folder_name, file_name))
+            dest_file_name = os.path.join(global_folder_name, file_name)
+            copyfile(item, dest_file_name)
             printProgress(iteration=i, total=len(file_list), prefix="progress: ", barLength=70,
                           suffix='(' + str(i) + '/' + str(len(file_list)) + ')')
+
+    def extract_exif_creation_date(self, item):
+        """
+        Extract exif information date
+        :param item: The file name
+        :return: A date in YYYY/MM/DD format
+        """
+        exif_dict = piexif.load(item)
+        creation_date = exif_dict['Exif'][36867]
+        date_folder = creation_date.split(' ')[0].replace(':', '/')
+        return date_folder
 
     def start(self):
         self.load_configuration(configuration_file=self.config_file)
@@ -78,8 +90,9 @@ class ExifClassifier:
         directories = os.listdir(source_folder)
         file_list = []
         for item in directories:
-            item_name = os.path.join(os.path.abspath(source_folder), item)
-            if not os.path.exists(item_name):
+            file_item = FileItem(os.path.abspath(source_folder, item))
+            # item_name = os.path.join(os.path.abspath(source_folder), item)
+            if not file_item.exists():
                 raise IOError("path " + item_name + " does not exists!!")
             if os.path.isfile(item_name):
                 filename = os.path.abspath(item_name)
