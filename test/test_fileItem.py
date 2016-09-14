@@ -1,15 +1,26 @@
 import os
+import shutil
 from unittest import TestCase
 
 from file_item import FileItem
 
 
-
 class TestFileItem(TestCase):
-
     def setUp(self):
-        self.FILE_EXIST_PATH = '/Users/ferranferri/directo/development/experimental/exif_classifier/test_resources/camera10/folder1/2016-05-11-20h32m20.jpg'
-        self.FILE_NOT_EXIST_PATH = '/Users/ferranferri/directo/development/experimental/exif_classifier/test_resources/camera10/folder1/2020-05-11-20h32m20.jpg'
+        self.FILE_EXIST_PATH = os.path.join(os.getcwd(), 'test_resources/camera10/folder1/2016-05-11-20h32m20.jpg')
+        self.FILE_NOT_EXIST_PATH = os.path.join(os.getcwd(), '/test_resources/camera10/folder1/2020-05-11-20h32m20.jpg')
+
+    def tearDown(self):
+        folder = os.path.join(os.getcwd(), 'test_resources/temp')
+        for item in os.listdir(folder):
+            file_path = os.path.join(folder, item)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(e)
 
     def test_constructor_if_path_is_not_absolut_raise_valueerror(self):
         with self.assertRaises(ValueError) as context:
@@ -34,5 +45,44 @@ class TestFileItem(TestCase):
 
     def test_file_name_returns_the_name_of_file(self):
         fi = FileItem(self.FILE_EXIST_PATH)
-        self.assertEqual(fi.name, '2016-05-11-20h32m20.jpg')
+        self.assertEqual(fi.name(), '2016-05-11-20h32m20.jpg')
 
+    def test_container_folder_returns_the_folder_name(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        self.assertEqual(os.path.join(os.getcwd(), 'test_resources/camera10/folder1'), fi.directory())
+
+    def test_creation_date_returns_exif_creation_date(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        self.assertEqual(fi.creation_date(), '2016:05:11 20:32:20')
+
+    def test_copy_to_a_folder_returns_the_new_path(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        path = os.path.join(os.getcwd(), 'test_resources/temp', fi.name())
+        self.assertEqual(path, fi.copy_to(path))
+    """
+    def test_copy_to_the_file_in_destinations_does_exists(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        path = os.path.join(os.getcwd(), 'test_resources/temp', fi.name())
+        final_path = fi.copy_to(path)
+        self.assertTrue(os.path.exists(final_path) and os.path.isfile(path))
+
+    def test_copy_if_folder_does_not_exists_it_is_created(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        path = os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2', fi.name())
+        self.assertFalse(os.path.exists(path))
+        final_path = fi.copy_to(path)
+        self.assertTrue(os.path.exists(final_path))
+    """
+    def test_equals_defines_files_equals_other_if_has_the_same_md5_sum(self):
+        fi1 = FileItem(self.FILE_EXIST_PATH)
+        fi2 = FileItem(self.FILE_EXIST_PATH)
+        self.assertTrue(fi1.equals(fi2))
+
+    """
+    def test_equals_is_true_even_if_files_are_in_different_places(self):
+    def test_equals_defines_files_equals_other_if_has_the_same_md5_sum(self):
+        fi1 = FileItem(self.FILE_EXIST_PATH)
+        file_name2 = os.path.join(os.getcwd(), 'test_resources/camera10/folder1/deep1/deep2/2016-08-14-14h49m55.jpg')
+        fi2 = FileItem(file_name2)
+        self.assertTrue(fi1.equals(fi2))
+    """

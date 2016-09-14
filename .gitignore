@@ -139,6 +139,6 @@ ENV/
 # Rope project settings
 .ropeproject
 # Created by .ignore support plugin (hsz.mobi)
-/Destination/
 .idea/
 Destination/
+/test_resources/destination/
