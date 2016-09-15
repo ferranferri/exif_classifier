@@ -51,6 +51,7 @@ class FileItem:
             elif os.path.isfile(final_path):
                 shutil.copyfile(self.source_path, final_path)
                 return final_path
+        else:
 
 
 
