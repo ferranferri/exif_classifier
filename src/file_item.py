@@ -41,19 +41,24 @@ class FileItem:
         b = self.__file_md5(fi2.full_file_name())
         return a == b
 
+    def __create_dir_recursive(self, path):
+        if not os.path.exists(path):
+            self.__create_dir_recursive(os.path.join(path, os.pardir))
+        os.makedirs(path)
+
     def copy_to(self, path):
         final_path = path
-        if os.path.exists(final_path):
-            if os.path.isdir(final_path):
-                final_path = os.path.join(final_path, self.name())
-                shutil.copyfile(self.source_path, final_path)
-                return final_path
-            elif os.path.isfile(final_path):
-                shutil.copyfile(self.source_path, final_path)
-                return final_path
-        else:
-
-
-
-    
-
+        if not os.path.exists(final_path):
+            if final_path.endswith('/') or final_path.endswith('\\'):
+                # assume is a directory
+                os.makedirs(final_path)
+                shutil.copy(self.source_path, os.path.join(final_path, self.name()))
+                return os.path.join(final_path, self.name())
+            else:
+                final_folder = os.path.abspath(os.path.join(final_path, os.pardir))
+                # get the file name
+                name = final_path.split('/')[-1]
+                if not os.path.exists(final_folder):
+                    os.makedirs(final_folder)
+                shutil.copy(self.source_path, os.path.join(final_folder, self.name()))
+                return os.path.join(final_folder, name)

@@ -8,6 +8,7 @@ from file_item import FileItem
 class TestFileItem(TestCase):
     def setUp(self):
         self.FILE_EXIST_PATH = os.path.join(os.getcwd(), 'test_resources/camera10/folder1/2016-05-11-20h32m20.jpg')
+        self.FILE_EXIST_PATH2 = os.path.join(os.getcwd(), 'test_resources/camera10/folder1/deep1/2016-05-21-17h41m59.jpg')
         self.FILE_NOT_EXIST_PATH = os.path.join(os.getcwd(), '/test_resources/camera10/folder1/2020-05-11-20h32m20.jpg')
 
     def tearDown(self):
@@ -59,13 +60,27 @@ class TestFileItem(TestCase):
         fi = FileItem(self.FILE_EXIST_PATH)
         path = os.path.join(os.getcwd(), 'test_resources/temp', fi.name())
         self.assertEqual(path, fi.copy_to(path))
-    """
+
+    def test_copy_to_a_folder_returns_path_when_destination_is_a_non_existent_folder(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        path = os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2/')
+        self.assertEqual(os.path.join(path, fi.name()), fi.copy_to(path))
+
+
+    def test_copy_to_file_returns_path_when_destination_is_a_non_existent_path(self):
+        fi = FileItem(self.FILE_EXIST_PATH)
+        file_name = 'file1.jpg'
+        path = os.path.join(os.getcwd(), 'test_resources/temp/deep1/', file_name)
+        self.assertEqual(path, fi.copy_to(path))
+
     def test_copy_to_the_file_in_destinations_does_exists(self):
         fi = FileItem(self.FILE_EXIST_PATH)
-        path = os.path.join(os.getcwd(), 'test_resources/temp', fi.name())
+        fi2 = FileItem(self.FILE_EXIST_PATH2)
+        fi2.copy_to(os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2/'))
+        path = os.path.join(os.getcwd(), 'test_resources/temp/deep1', fi.name())
         final_path = fi.copy_to(path)
         self.assertTrue(os.path.exists(final_path) and os.path.isfile(path))
-
+    """
     def test_copy_if_folder_does_not_exists_it_is_created(self):
         fi = FileItem(self.FILE_EXIST_PATH)
         path = os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2', fi.name())
