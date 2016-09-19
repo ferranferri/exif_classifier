@@ -8,10 +8,10 @@ from shutil import copyfile
 import ntpath
 
 from file_item import FileItem
+from log_config import get_logger
 from percentage_show import printProgress
 
 DEFAULT_CONFIG_FILE = 'conf/config.json'
-LOG_NAME = 'IMG_SORT'
 
 
 class ExifClassifier:
@@ -57,7 +57,8 @@ class ExifClassifier:
             printProgress(iteration=i, total=len(file_list), prefix="progress: ", barLength=70,
                           suffix='(' + str(i) + '/' + str(len(file_list)) + ')')
 
-    def extract_exif_creation_date(self, item):
+    @staticmethod
+    def extract_exif_creation_date(item):
         """
         Extract exif information date
         :param item: The file name
@@ -87,19 +88,7 @@ class ExifClassifier:
         :param source_folder: Source folder
         :return: A list of the contents of folder and its subfolders
         """
-        directories = os.listdir(source_folder)
-        file_list = []
-        for item in directories:
-            file_item = FileItem(os.path.abspath(source_folder, item))
-            # item_name = os.path.join(os.path.abspath(source_folder), item)
-            if not file_item.exists():
-                raise IOError("path " + item_name + " does not exists!!")
-            if os.path.isfile(item_name):
-                filename = os.path.abspath(item_name)
-                file_list.append(filename)
-            if os.path.isdir(item_name):
-                file_list = file_list + self.__list_subfolder(os.path.abspath(item_name))
-        return file_list
+        assert(False)
 
     def validate_folder(self, folder):
         return self.validate_item(folder) and os.path.isdir(folder)
@@ -122,11 +111,6 @@ def usage():
         --v --verbose   Show debug messages
     """
     print(help_string)
-
-
-def get_logger():
-    global LOG_NAME
-    return logging.getLogger(LOG_NAME)
 
 
 def process_options(opts):
@@ -155,8 +139,7 @@ def main():
         usage()
         sys.exit(2)
     # setting log. Search for verbose level
-    logging.basicConfig(level=logging.CRITICAL)
-    logger = logging.getLogger("IMG_SORT")
+
     for opt, arg in opts:
         if opt in ("v", "--verbose"):
             logger.setLevel(logging.DEBUG)

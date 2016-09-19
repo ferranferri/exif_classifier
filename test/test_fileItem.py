@@ -80,24 +80,27 @@ class TestFileItem(TestCase):
         path = os.path.join(os.getcwd(), 'test_resources/temp/deep1', fi.name())
         final_path = fi.copy_to(path)
         self.assertTrue(os.path.exists(final_path) and os.path.isfile(path))
-    """
+
     def test_copy_if_folder_does_not_exists_it_is_created(self):
         fi = FileItem(self.FILE_EXIST_PATH)
+        fi2 = FileItem(self.FILE_EXIST_PATH2)
+        fi2.copy_to(os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2/', 'file1.jpg'))
         path = os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2', fi.name())
         self.assertFalse(os.path.exists(path))
         final_path = fi.copy_to(path)
         self.assertTrue(os.path.exists(final_path))
-    """
+
     def test_equals_defines_files_equals_other_if_has_the_same_md5_sum(self):
         fi1 = FileItem(self.FILE_EXIST_PATH)
         fi2 = FileItem(self.FILE_EXIST_PATH)
         self.assertTrue(fi1.equals(fi2))
 
-    """
-    def test_equals_is_true_even_if_files_are_in_different_places(self):
-    def test_equals_defines_files_equals_other_if_has_the_same_md5_sum(self):
+    def test_copy_to_if_file_name_exists_in_destination_but_not_equals_file_is_dubplicated(self):
         fi1 = FileItem(self.FILE_EXIST_PATH)
-        file_name2 = os.path.join(os.getcwd(), 'test_resources/camera10/folder1/deep1/deep2/2016-08-14-14h49m55.jpg')
-        fi2 = FileItem(file_name2)
-        self.assertTrue(fi1.equals(fi2))
-    """
+        path1 = fi1.copy_to(os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2/', 'file1.jpg'))
+        fi2 = FileItem(self.FILE_EXIST_PATH2)
+        path2 = fi2.copy_to(os.path.join(os.getcwd(), 'test_resources/temp/deep1/deep2/', 'file1.jpg'))
+        self.assertNotEqual(path1, path2)
+        self.assertEqual(fi1.get_destination_path(), path1)
+
+

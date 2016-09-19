@@ -2,14 +2,17 @@ import os
 import hashlib
 import piexif
 import shutil
-
+import logging
 
 class FileItem:
     def __init__(self, source_path):
         if not os.path.isabs(source_path):
             raise ValueError("Path must me absolut!!\n >>" + source_path)
         self.source_path = source_path
+        self.dest_path = ''
         self.exif_dic = {}
+        logging.basicConfig(level=logging.CRITICAL)
+        self.logger = logging.getLogger("FILE_ITEM")
 
     @staticmethod
     def __file_md5(fname):
@@ -46,6 +49,9 @@ class FileItem:
             self.__create_dir_recursive(os.path.join(path, os.pardir))
         os.makedirs(path)
 
+    def get_destination_path(self):
+        return self.dest_path
+
     def copy_to(self, path):
         final_path = path
         if not os.path.exists(final_path):
@@ -53,12 +59,25 @@ class FileItem:
                 # assume is a directory
                 os.makedirs(final_path)
                 shutil.copy(self.source_path, os.path.join(final_path, self.name()))
-                return os.path.join(final_path, self.name())
+                self.dest_path = os.path.join(final_path, self.name())
             else:
                 final_folder = os.path.abspath(os.path.join(final_path, os.pardir))
                 # get the file name
                 name = final_path.split('/')[-1]
                 if not os.path.exists(final_folder):
                     os.makedirs(final_folder)
-                shutil.copy(self.source_path, os.path.join(final_folder, self.name()))
-                return os.path.join(final_folder, name)
+                shutil.copy(self.source_path, os.path.join(final_folder, name))
+                self.dest_path = os.path.join(final_folder, name)
+        else:
+            self.logger.warning("A file with the same name already exists")
+            fi = FileItem(final_path)
+            if self.equals(fi):
+                self.dest_path = fi.full_file_name()
+                self.logger.info("The file is the same. No copies are made")
+            else:
+                name, extension = fi.name().split(".")
+                directory = fi.directory()
+                self.dest_path = os.path.join(directory, name + '_1.' + extension)
+                self.copy_to(self.dest_path)
+                self.logger.warning("Two different files with the same name exists. Changing destination name")
+        return self.dest_path
