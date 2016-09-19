@@ -3,9 +3,6 @@ import json
 import os
 import sys
 import logging
-import piexif
-from shutil import copyfile
-import ntpath
 
 from file_item import FileItem
 from log_config import get_logger
@@ -42,32 +39,20 @@ class ExifClassifier:
             raise ValueError("Cannot parse json file " + self.config_file)
 
     def process_list(self, file_list, config):
-        # check that destination folder exists
-        des_folder = self.folder_global_path(config['destination_folder'])
-        i = 0
-        for item in file_list:
-            i += 1
-            date_folder = self.extract_exif_creation_date(item)
-            global_folder_name = os.path.join(des_folder, date_folder)
-            if not os.path.exists(global_folder_name):
-                os.makedirs(global_folder_name)
-            file_name = ntpath.basename(item)
-            dest_file_name = os.path.join(global_folder_name, file_name)
-            copyfile(item, dest_file_name)
-            printProgress(iteration=i, total=len(file_list), prefix="progress: ", barLength=70,
-                          suffix='(' + str(i) + '/' + str(len(file_list)) + ')')
+        num_items = len(file_list)
+        current_item = 0
+        num_files_copied = 0
+        printProgress(current_item, num_items, prefix='Progress:', suffix='Complete', barLength=50)
+        for file_item in file_list:
+            created_dir = self.create_path_from_name(file_item)
+            created_dir = os.path.join(os.getcwd(), self.config['destination_folder'], created_dir)
+            path, file_exists = file_item.copy_to(os.path.join(created_dir, file_item.name()))
+            current_item += 1
+            if not file_exists:
+                num_files_copied += 1
+            printProgress(current_item, num_items, prefix='Progress:', suffix='Complete', barLength=50)
 
-    @staticmethod
-    def extract_exif_creation_date(item):
-        """
-        Extract exif information date
-        :param item: The file name
-        :return: A date in YYYY/MM/DD format
-        """
-        exif_dict = piexif.load(item)
-        creation_date = exif_dict['Exif'][36867]
-        date_folder = creation_date.split(' ')[0].replace(':', '/')
-        return date_folder
+        print ("Finished. " + str(num_items) + ' processed. ' + str(num_files_copied) + ' new files added')
 
     def start(self):
         self.load_configuration(configuration_file=self.config_file)
@@ -88,19 +73,21 @@ class ExifClassifier:
         :param source_folder: Source folder
         :return: A list of the contents of folder and its subfolders
         """
-        assert(False)
+        files_to_process = []
+        list_items = os.listdir(source_folder)
+        for item in list_items:
+            item = os.path.join(os.getcwd(), self.config['source_folder'], item)
+            if os.path.isdir(item):
+                self.files_to_process += self.__list_subfolder(item)
+            elif os.path.exists(item) and os.path.isfile(item):
+                files_to_process.append(FileItem(os.path.abspath(item)))
+        return files_to_process
 
-    def validate_folder(self, folder):
-        return self.validate_item(folder) and os.path.isdir(folder)
-
-    def folder_global_path(self, folder):
-        if self.validate_folder(folder):
-            return os.path.join(os.getcwd(), folder)
-        raise IOError("Directory " + folder + " does not exists")
-
-    @staticmethod
-    def validate_item(item):
-        return os.path.exists(item)
+    def create_path_from_name(self, file_item):
+        date_exif = file_item.creation_date()
+        date, hour = date_exif.split(' ')
+        date = date.replace(':', '/')
+        return date
 
 
 def usage():

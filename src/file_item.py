@@ -4,6 +4,7 @@ import piexif
 import shutil
 import logging
 
+
 class FileItem:
     def __init__(self, source_path):
         if not os.path.isabs(source_path):
@@ -54,7 +55,9 @@ class FileItem:
 
     def copy_to(self, path):
         final_path = path
+        file_exists = False
         if not os.path.exists(final_path):
+            file_exists = False
             if final_path.endswith('/') or final_path.endswith('\\'):
                 # assume is a directory
                 os.makedirs(final_path)
@@ -69,6 +72,7 @@ class FileItem:
                 shutil.copy(self.source_path, os.path.join(final_folder, name))
                 self.dest_path = os.path.join(final_folder, name)
         else:
+            file_exists = True
             self.logger.warning("A file with the same name already exists")
             fi = FileItem(final_path)
             if self.equals(fi):
@@ -80,4 +84,4 @@ class FileItem:
                 self.dest_path = os.path.join(directory, name + '_1.' + extension)
                 self.copy_to(self.dest_path)
                 self.logger.warning("Two different files with the same name exists. Changing destination name")
-        return self.dest_path
+        return self.dest_path, file_exists
